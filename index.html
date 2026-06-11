@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>12班词典</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f3ef;
+            font-family: 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            color: #2c2b28;
+            padding: 2rem 1rem;
+        }
+
+        /* 主容器 */
+        .dictionary-container {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #fffef7;
+            border-radius: 32px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        /* 页眉区域 */
+        .dict-header {
+            padding: 1.8rem 2rem 1.2rem 2rem;
+            border-bottom: 1px solid #e9e6df;
+            background: #fffcf5;
+        }
+
+        .dict-header h1 {
+            font-size: 1.9rem;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #3a2c1f;
+        }
+
+        .dict-header h1:before {
+            content: "📖";
+            font-size: 1.8rem;
+            font-weight: normal;
+        }
+
+        .sub {
+            color: #7e6e5a;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            border-left: 3px solid #d9c7a7;
+            padding-left: 12px;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            padding: 1.2rem 2rem;
+            background: #fefaf2;
+            border-bottom: 1px solid #ece6db;
+        }
+
+        .search-area label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #aa9c84;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            border: 1px solid #e2dacf;
+            border-radius: 60px;
+            background: white;
+            transition: 0.2s;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-box:focus {
+            border-color: #c0aa7a;
+            box-shadow: 0 0 0 2px rgba(192, 170, 122, 0.2);
+        }
+
+        /* 统计条 */
+        .stats-bar {
+            padding: 0.6rem 2rem;
+            background: #fefaf5;
+            font-size: 0.8rem;
+            color: #806e56;
+            border-bottom: 1px solid #efe8dd;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* 词条列表区域 — 词典核心 */
+        .entries-list {
+            padding: 0.5rem 0 1rem 0;
+            background: #ffffff;
+        }
+
+        .entry-item {
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid #f0ebe2;
+            transition: background 0.2s;
+        }
+
+        .entry-item:hover {
+            background: #fefaf7;
+        }
+
+        .entry-name {
+            font-size: 1.45rem;
+            font-weight: 600;
+            color: #2c241a;
+            letter-spacing: -0.2px;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* 词条名装饰小点（传统风格） */
+        .entry-name::before {
+            content: "◆";
+            font-size: 0.9rem;
+            color: #d9b48b;
+            margin-right: 6px;
+            font-weight: 400;
+        }
+
+        .entry-desc {
+            font-size: 0.9rem;
+            line-height: 1.45;
+            color: #6b5d4c;
+            margin-left: 1.5rem;
+            padding-left: 0.25rem;
+            border-left: 2px solid #f0e0ce;
+            font-style: normal;
+            transition: color 0.2s;
+        }
+
+        /* 小字描述的特殊质感 */
+        .entry-desc {
+            font-size: 0.88rem;
+            color: #7b6b58;
+        }
+
+        /* 空状态 / 错误状态 */
+        .empty-placeholder, .error-placeholder {
+            text-align: center;
+            padding: 3.5rem 2rem;
+            color: #b9ab97;
+            font-size: 0.95rem;
+        }
+
+        .empty-placeholder i, .error-placeholder i {
+            font-style: normal;
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .error-placeholder {
+            color: #b17e5a;
+        }
+
+        @media (max-width: 620px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .dict-header h1 {
+                font-size: 1.5rem;
+            }
+            .entry-name {
+                font-size: 1.2rem;
+            }
+            .entry-desc {
+                margin-left: 0.7rem;
+            }
+            .entry-item {
+                padding: 1rem 1.2rem;
+            }
+            .stats-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dictionary-container">
+    <div class="dict-header">
+        <h1>12班词典</h1>
+        <div class="sub">12班梗合集  |  让你看懂12班同学在讲什么</div>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-area">
+            <label>🔍 检索词条</label>
+            <input type="text" id="searchInput" class="search-box" placeholder="输入词条名或描述…" autocomplete="off">
+        </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar">
+        <span>📚 词条总数: <strong id="totalCount">0</strong></span>
+        <span>🔎 当前显示: <strong id="displayCount">0</strong></span>
+    </div>
+
+    <div id="entriesContainer" class="entries-list">
+        <!-- 动态词条会渲染在此处 -->
+        <div class="empty-placeholder">
+            <i>📭</i> 正在加载词条...
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 全局变量 ----------
+    let allEntries = [];          // 完整词条库
+    let currentFilter = "";      // 当前搜索关键词
+    let loadError = false;       // 是否加载失败
+
+    // DOM 元素
+    const entriesContainer = document.getElementById('entriesContainer');
+    const searchInput = document.getElementById('searchInput');
+    const totalCountSpan = document.getElementById('totalCount');
+    const displayCountSpan = document.getElementById('displayCount');
+
+    // ---------- 渲染函数 (基于纯DOM，安全无注入) ----------
+    function renderEntries(entriesToRender) {
+        entriesContainer.innerHTML = '';
+        
+        if (loadError) {
+            // 显示加载错误信息
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-placeholder';
+            errorDiv.innerHTML = `
+                <i>⚠️</i>
+                <div>无法加载词典数据</div>
+                <small style="font-size:0.8rem; margin-top:8px; display:inline-block;">请确保 data.json 文件存在于本页面同级目录下，且格式为合法的 JSON 数组。</small>
+                <small style="font-size:0.75rem; display:block; margin-top:8px;">格式示例: [{"name": "词条名", "desc": "描述"}]</small>
+            `;
+            entriesContainer.appendChild(errorDiv);
+            return;
+        }
+        
+        if (!entriesToRender || entriesToRender.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-placeholder';
+            emptyDiv.innerHTML = `
+                <i>📖</i>
+                <div>没有找到相关词条</div>
+                <small style="font-size:0.8rem; margin-top:6px; display:inline-block;">试试其他关键词</small>
+            `;
+            entriesContainer.appendChild(emptyDiv);
+            return;
+        }
+        
+        // 循环构建每个词条
+        for (let i = 0; i < entriesToRender.length; i++) {
+            const item = entriesToRender[i];
+            const nameText = (item.name !== undefined && item.name !== null) ? String(item.name) : "未命名词条";
+            const descText = (item.desc !== undefined && item.desc !== null) ? String(item.desc) : "（暂无描述）";
+            
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'entry-item';
+            
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'entry-name';
+            nameDiv.textContent = nameText;
+            
+            const descDiv = document.createElement('div');
+            descDiv.className = 'entry-desc';
+            descDiv.textContent = descText;
+            
+            entryDiv.appendChild(nameDiv);
+            entryDiv.appendChild(descDiv);
+            entriesContainer.appendChild(entryDiv);
+        }
+    }
+    
+    // 过滤函数：根据 currentFilter 从 allEntries 中筛选
+    function getFilteredEntries() {
+        const filterLower = currentFilter.trim().toLowerCase();
+        if (filterLower === "") {
+            return [...allEntries];
+        }
+        return allEntries.filter(entry => {
+            const nameMatch = (entry.name && String(entry.name).toLowerCase().includes(filterLower));
+            const descMatch = (entry.desc && String(entry.desc).toLowerCase().includes(filterLower));
+            return nameMatch || descMatch;
+        });
+    }
+    
+    // 更新统计与显示
+    function updateDisplayAndStats() {
+        const filtered = getFilteredEntries();
+        renderEntries(filtered);
+        
+        const total = allEntries.length;
+        const showing = filtered.length;
+        totalCountSpan.textContent = total;
+        displayCountSpan.textContent = showing;
+    }
+    
+    // 搜索输入事件
+    function onSearchInput() {
+        currentFilter = searchInput.value;
+        updateDisplayAndStats();
+    }
+    
+    // 设置数据源 (成功加载时调用)
+    function setDataFromJson(entriesArray) {
+        loadError = false;
+        if (!Array.isArray(entriesArray)) {
+            console.warn("数据格式错误: 不是数组");
+            loadError = true;
+            allEntries = [];
+            updateDisplayAndStats();
+            return;
+        }
+        
+        // 规范化每个条目，保证至少包含 name 和 desc 字段
+        const validated = [];
+        for (let i = 0; i < entriesArray.length; i++) {
+            const item = entriesArray[i];
+            if (item && typeof item === 'object') {
+                validated.push({
+                    name: (item.name !== undefined && item.name !== null) ? String(item.name) : "未命名词条",
+                    desc: (item.desc !== undefined && item.desc !== null) ? String(item.desc) : "（无描述）"
+                });
+            } else {
+                console.warn("忽略无效词条项:", item);
+            }
+        }
+        allEntries = validated;
+        // 重置搜索框和过滤状态
+        searchInput.value = "";
+        currentFilter = "";
+        updateDisplayAndStats();
+    }
+    
+    // 处理加载错误
+    function handleLoadError(errorMsg) {
+        console.error("加载 data.json 失败:", errorMsg);
+        loadError = true;
+        allEntries = [];
+        updateDisplayAndStats();
+    }
+    
+    // 从同目录下的 data.json 读取数据
+    function fetchDataFromJson() {
+        // 显示加载中的占位（避免短暂空白）
+        entriesContainer.innerHTML = '<div class="empty-placeholder"><i>⏳</i> 读取词典中...</div>';
+        
+        fetch('./data.json', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-cache'  // 避免缓存干扰，开发时友好
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data === null || data === undefined) {
+                throw new Error("JSON 内容为空");
+            }
+            setDataFromJson(data);
+        })
+        .catch(err => {
+            handleLoadError(err.message);
+        });
+    }
+    
+    // ---------- 初始化 ----------
+    function init() {
+        // 监听搜索框
+        searchInput.addEventListener('input', onSearchInput);
+        // 加载外部 data.json
+        fetchDataFromJson();
+    }
+    
+    init();
+</script>
+</body>
+</html>
